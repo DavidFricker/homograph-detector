@@ -13,8 +13,7 @@ set_error_handler('errHandle');
 class Create {
 
     private static $homoglyphs = 
-        '
-!ǃⵑ！
+        '!ǃⵑ！
 $＄
 %％
 &ꝸ＆
@@ -1825,34 +1824,95 @@ zᴢｚ𑣄𝐳𝑧𝒛𝓏𝔃𝔷𝕫𝖟𝗓𝘇𝘻𝙯𝚣
 
     public static function go($input) {
         $arr = explode("\n", self::$homoglyphs);
+        $matchedGlyphs = [];
+
 
         foreach ($arr as $glyphs) {
+            
             if (preg_match(self::createRegex($glyphs), rtrim($input))) {
-                echo "match: $glyphs" . PHP_EOL;
+                echo "match: $glyphs <br>";
+               $matchedGlyphs = array_merge($matchedGlyphs, self::getGArr($glyphs));
             }
-            //exit;
-        }               
+        }
+
+        //$p = self::makePerms($input, $matchedGlyphs);
+        $p = self::mp($input, $matchedGlyphs);
+
+        die(var_dump($p));        
+    }
+
+    public static function mp($input, $glyphSet) {
+        $arr = [];
+
+        foreach ($glyphSet as $k => $glyph) {
+
+            echo $y = self::buildSingleList($input,$glyph, $glyphSet) . '<br>';
+            $arr[] = $y;
+            
+//var_dump(array_diff($glyphSet, [$glyph]));exit;
+$glyphSet2 = $glyphSet;
+            unset($glyphSet2[$k]);
+            //var_dump(($glyphSet));exit;
+            //$temp = self::mp($input, array_diff($glyphSet, [$glyph]));
+            $temp = self::mp($input, $glyphSet2);
+          //  $arr = array_merge($arr, $temp);
+        }
+var_dump(($glyphSet));exit;
+        return $arr;
+    }
+
+    private static function buildSingleList($input, $gChar, $glyphs) {
+
+        return preg_replace(array(self::createRegex($glyphs)), $gChar, $input, 1 , $count);
+    }
+
+    public static function makePerms($input, $perSetArr=[], $glyphs='') {
+        if (!is_array($perSetArr)) {
+            return false;
+        }
+
+        // loop over each array of permutation glpyhs
+        foreach ($perSetArr as $key => $glyphArr) {
+            // we've hit an actual character - now its time to go back up the call stack
+            if(!is_array($perSetArr)) {
+                $modStr = self::buildSingleList($input,$perSetArr,$glyphs);
+                return $modStr;
+            }
+
+            self::makePerms($input, $glyphArr);
+        }
+    }
+
+    private static function getGArr($glyphs) {
+        $parts = preg_split('//u', $glyphs, -1, PREG_SPLIT_NO_EMPTY);
+        array_pop($parts);
+        return $parts;
     }
 
     private static function createRegex($glyphs) {
-        $parts = preg_split('//u', $glyphs, -1, PREG_SPLIT_NO_EMPTY);
+        if(!is_array($glyphs)) {
+$parts = self::getGArr($glyphs);//preg_split('//u', $glyphs, -1, PREG_SPLIT_NO_EMPTY);
+        }else{
+            $parts = $glyphs;
+        }
+        
        // unset($parts[count($parts)-1]);
 
         $regex = '/[(';
         //$i = count($ui);
-        /*foreach($parts as $ui) {
-            $regex .= $ui;
-
-            if ($i < ) {
-                $regex .= '|';
-            }
-        }*/
-       // echo count($parts);
-        for ($i = 0; $i < count($parts) - 1; $i++) { 
+        foreach($parts as $ui) {
+             // preg_quote escape special characters so they dont mess the matching up
+            $regex .= preg_quote($ui) . '|';
+        }
+     /*  // echo count($parts);
+       if(count($parts) > 0) {
+        print_r($parts);
+        for ($i = 0; $i < count($parts); $i++) { 
             // preg_quote escape special characters so they dont mess the matching up
             $regex .= preg_quote($parts[$i]) . '|';
         }
-        $regex;
+    }
+        */
 
         $regex = rtrim($regex, '|');
         //echo strlen($regex);
@@ -1862,6 +1922,9 @@ zᴢｚ𑣄𝐳𝑧𝒛𝓏𝔃𝔷𝕫𝖟𝗓𝘇𝘻𝙯𝚣
 
         return $regex;
     }
+
+    
 }
 
-Create::go('test');
+Create::go('te');
+
